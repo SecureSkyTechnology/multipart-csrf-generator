@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8" />
+<title>multipart CSRF generator</title>
+</head>
+<body>
+<h2>HTTP multipart リクエストファイルをアップロードしてください</h2>
+<form data-th-action="@{/upload-multipart-request}" method="post" enctype="multipart/form-data" target="_blank">
+完全なURL : <input type="text" name="url" value="" placeholder="http:// または https:// 始まりのURL" size="100"/><br />
+リクエストの主たる文字コード : 
+<select name="csname">
+<option th:each="cs : ${charsets}" th:value="${cs}" th:inline="text">[[${cs}]]</option>
+</select><br />
+HTTP multipart リクエストファイル : <input type="file" name="httpRequest"/><br />
+<input type="submit"/>
+</form>
+
+<h2>HTTP multipart リクエストのサンプルフォーム</h2>
+
+UTF-8日本語文字列パラメータを含む 0x00 - 0xFF のファイルアップロードのmultipart リクエストをサンプリングするダミーフォームです。
+ローカルHTTPプロキシを使ってmultipartリクエストを保存し、上のフォームにアップロードしてみてください。
+
+<ul>
+<li><a data-th-href="@{/256_0to255.bin}" target="_blank">0x00 - 0xFF が1回繰り返された256バイトのバイナリデータファイル</a></li>
+<li><a data-th-href="@{/512_0to255.bin}" target="_blank">0x00 - 0xFF が2回繰り返された512バイトのバイナリデータファイル</a></li>
+<li><a data-th-href="@{/sample-multipart-request-1.bin}" target="_blank">実際に上記ファイルをこのフォームで送信したときのHTTPリクエストのサンプル</a></li>
+</ul>
+
+<form method="post" enctype="multipart/form-data" target="_blank">
+日本語文字列1 <input type="text" name="msg1" value="日本語文字列1"/><br /> 
+日本語文字列2 <input type="text" name="msg1" value="日本語文字列2"/><br />
+file1 : <input type="file" name="file1"/><br />
+file2 : <input type="file" name="file2"/><br />
+<input type="submit"/>
+</form>
+
+</body>
+</html>

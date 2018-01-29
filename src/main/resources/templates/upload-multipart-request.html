@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8" />
+<title>ファイルアップロード結果</title>
+</head>
+<body>
+
+<h3>ファイルアップロード結果</h3>
+<p data-th-inline="text">完全なURL： '[[${param.url[0]}]]'</p>
+<p data-th-inline="text">文字コード： '[[${param.csname[0]}]]'</p>
+
+<h3>デバッグ : アップロードされたHTTPリクエストのデータファイル情報</h3>
+<table border="1">
+<tr><th>getContentType()</th><td data-th-text="${httpRequest.contentType}"></td></tr>
+<tr><th>getSize()</th><td data-th-text="${httpRequest.size}"></td></tr>
+<tr><th>getName()</th><td data-th-text="${httpRequest.name}"></td></tr>
+<tr><th>getSubmittedFileName()</th><td data-th-text="${httpRequest.submittedFileName}"></td></tr>
+<tr>
+<th>getHeaderNames() + getHeader()</th>
+<td>
+<ol>
+<li data-th-each="header : ${httpRequest.headerNames}" data-th-text="${httpRequest.getHeader(header)}"></li>
+</ol>
+</td>
+</tr>
+</table>
+
+<h3>デバッグ : アップロードされたHTTPリクエストのmultipart解析結果</h3>
+<h4>Request Line</h4>
+<table border="1">
+<tr><th>METHOD</th><td data-th-text="${mpreq.requestLine.method}"></td></tr>
+<tr><th>PATH</th><td data-th-text="${mpreq.requestLine.uri}"></td></tr>
+<tr><th>VERSION</th><td data-th-text="${mpreq.requestLine.protocolVersion}"></td></tr>
+</table>
+
+<h4>Headers</h4>
+<table border="1">
+<tr><th>Name</th><th>Value</th></tr>
+<tr data-th-each="header : ${mpreq.headers}">
+<td data-th-text="${header.name}"></td>
+<td data-th-text="${header.value}"></td>
+</tr>
+</table>
+
+<h4>multipartパラメータ一覧</h4>
+<table border="1">
+<tr><th>Name</th><th>isFile?</th><th>値 or ファイル名 + Content-Type + length</th></tr>
+<tr data-th-each="param : ${mpreq.multipartParameters}">
+<td data-th-text="${param.name}"></td>
+<td data-th-text="${param.isFile}"></td>
+<td data-th-text="${param.isFile} ? ${param.fileName} + ' ' + ${param.contentType} + ' ' + ${param.fileBytes.length} : ${param.printableValue}"></td>
+</tr>
+</table>
+
+</body>
+</html>
