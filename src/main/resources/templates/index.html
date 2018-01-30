@@ -17,6 +17,12 @@ HTTP multipart リクエストファイル : <input type="file" name="httpReques
 生成するCSRFフォームでの自動アクセス : 
 <label><input type="radio" name="enableAutoAccess" value="true" data-th-checked="true"/>ON</label>
 <label><input type="radio" name="enableAutoAccess" value="false"/>OFF</label><br />
+Cookie送信(withCredentials) : 
+<label><input type="radio" name="withCredentials" value="true" data-th-checked="true"/>ON</label>
+<label><input type="radio" name="withCredentials" value="false"/>OFF</label><br />
+Basic認証(Authorizationヘッダーのコピー) : 
+<label><input type="radio" name="copyAuthorizationHeader" value="true" data-th-checked="true"/>ON</label>
+<label><input type="radio" name="copyAuthorizationHeader" value="false"/>OFF</label><br />
 <input type="submit"/>
 </form>
 

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -99,48 +100,103 @@ public class HttpMultipartRequest {
         }
     }
 
-    public String createCSRFhtml() {
+    public static String jsescape(String s) {
+        if (Objects.isNull(s)) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder(s.length() * 2);
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch (c) {
+            case '\b':
+                sb.append("\\x08");
+                break;
+            case '\t':
+                sb.append("\\x09");
+                break;
+            case '\n':
+                sb.append("\\x0a");
+                break;
+            case '\r':
+                sb.append("\\x0d");
+                break;
+            case '\f':
+                sb.append("\\x0c");
+                break;
+            case '<':
+                sb.append("\\x3c");
+                break;
+            case '>':
+                sb.append("\\x3e");
+                break;
+            case '"':
+                sb.append("\\x22");
+                break;
+            case '\'':
+                sb.append("\\x27");
+                break;
+            case '\\':
+                sb.append("\\\\");
+                break;
+            case '/':
+                sb.append("\\/");
+                break;
+            default:
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    public String createCSRFhtml(final String uri, final boolean enableAutoAccess, final boolean withCredentials,
+            final boolean copyAuthorizationHeader) {
         final StringBuilder sb = new StringBuilder();
         sb.append("<html>\r\n");
         sb.append("<head><meta charset=\"" + charset.name() + "\"></head>\r\n");
         sb.append("<body><script>\r\n");
+        sb.append("function docsrf() {\r\n");
         sb.append("var formData = new FormData();\r\n");
         for (MultipartParameter mp : this.multipartParameters) {
-            // TODO JavaScript String Literal escaping : \' or unicode escape selectable. / OR HTML escaping includes '
+            final String pname = jsescape(mp.name);
             if (mp.isFile) {
-                sb.append("formData.append('" + mp.name + "', '" + mp.printableValue + "');\r\n");
-            } else {
+                final HexDumper hd = new HexDumper();
+                hd.setPrefix("0x");
+                hd.setSeparator(",");
+                hd.setToUpperCase(false);
+                final String uint8arr = hd.dump(mp.fileBytes);
                 sb.append(
                     "formData.append('"
-                        + mp.name
-                        + "', new File([/*TODO*/], '"
-                        + mp.fileName
+                        + pname
+                        + "', new File([new Blob([new Uint8Array(["
+                        + uint8arr
+                        + "])], {type: 'application/octet-stream'})], '"
+                        + jsescape(mp.fileName)
                         + "', {type: '"
                         + mp.contentType
                         + "'}));\r\n");
+            } else {
+                sb.append("formData.append('" + pname + "', '" + jsescape(mp.printableValue) + "');\r\n");
             }
         }
         sb.append("var xhr = new XMLHttpRequest();\r\n");
-        sb.append("xhr.open('" + this.requestLine.getMethod() + "', '" + this.requestLine.getUri() + "');\r\n");
+        sb.append("xhr.open('" + this.requestLine.getMethod() + "', '" + jsescape(uri) + "');\r\n");
         for (Header h : this.headers) {
             final String n = h.getName();
-            if ("Host".equals(n)) {
-                continue;
+            if (copyAuthorizationHeader && n.equals("Authorization")) {
+                sb.append("xhr.setRequestHeader('" + h.getName() + "', '" + h.getValue() + "');\r\n");
             }
-            if ("Content-Type".equals(n)) {
-                continue;
-            }
-            if ("Content-Length".equals(n)) {
-                continue;
-            }
-            if ("Cookie".equals(n)) {
-                continue;
-            }
-            sb.append("xhr.setRequestHeader(\"" + h.getName() + "\", \"" + h.getValue() + "\");\r\n");
         }
-        sb.append("xhr.withCredentials = true;\r\n");
+        if (withCredentials) {
+            sb.append("xhr.withCredentials = true;\r\n");
+        }
         sb.append("xhr.send(formData);\r\n");
-        sb.append("</script></body>\r\n</html>");
+        sb.append("}\r\n");
+        if (enableAutoAccess) {
+            sb.append("docsrf();\r\n");
+        }
+        sb.append("</script>\r\n");
+        sb.append("<input type=\"submit\" onclick=\"docsrf(); return false;\">\r\n");
+        sb.append("</body></html>");
         return sb.toString();
     }
 }
