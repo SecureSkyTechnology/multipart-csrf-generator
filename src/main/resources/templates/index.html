@@ -40,11 +40,17 @@ UTF-8日本語文字列パラメータを含む 0x00 - 0xFF のファイルア�
 <li><a data-th-href="@{/sample-multipart-request-1.bin}" target="_blank">実際に上記ファイルをこのフォームで送信したときのHTTPリクエストのサンプル</a></li>
 </ul>
 
-<form method="post" enctype="multipart/form-data" target="_blank">
-日本語文字列1 <input type="text" name="msg1" value="&lt;&gt;&quot;&amp;&#039;日本語文字列1"/><br /> 
-日本語文字列2 <input type="text" name="msg1" value="&lt;&gt;&quot;&amp;&#039;日本語文字列2"/><br />
-file1 : <input type="file" name="file1"/><br />
-file2 : <input type="file" name="file2"/><br />
+<form method="post" enctype="multipart/form-data" target="_blank" data-th-action="@{/dummy}">
+<table>
+<tr><th>ascii pname1%0d%0a</th><td><input type="text" name="ascii pname1%0d%0a" value="ascii &#13;&#10;pvalue1%0d%0a"/></td></tr>
+<tr><th>ascii(0x0d)(0x0a)pname2[]%0d%0a</th><td><textarea name="ascii&#13;&#10;pname2[]%0d%0a">ascii
+pvalue2[]
+%0d%0a</textarea></td></tr>
+<tr><th>&lt;&gt;&quot;&amp;&#39;日本語キー</th><td><input type="text" name="&lt;&gt;&quot;&amp;&#39;日本語キー" value="&lt;&gt;&quot;&amp;&#39;日本語文字列1"/></td></tr>
+<tr><th>&lt;&gt;&quot;&amp;&#39;日本語キー</th><td><input type="text" name="&lt;&gt;&quot;&amp;&#39;日本語キー" value="&lt;&gt;&quot;&amp;&#39;日本語文字列2"/></td></tr>
+<tr><th>fileA</th><td><input type="file" name="fileA"/></td></tr>
+<tr><th>&lt;&gt;&quot;&amp;&#39;ファイル(0x0d)(0x0a)B%0d%0a</th><td><input type="file" name="&lt;&gt;&quot;&amp;&#39;ファイル&#13;&#10;B%0d%0a"/></td></tr>
+</table>
 <input type="submit"/>
 </form>
 

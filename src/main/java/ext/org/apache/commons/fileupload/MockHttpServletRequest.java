@@ -20,7 +20,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -60,15 +60,18 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
     private final Map<String, String> m_headers = new java.util.HashMap<String, String>();
 
+    private final Charset m_charset;
+
     /**
      * Creates a new instance with the given request data
      * and content type.
      */
     public MockHttpServletRequest(
             final byte[] requestData,
-            final String strContentType) {
+            final String strContentType,
+            final Charset charset) {
         this(new ByteArrayInputStream(requestData),
-                requestData.length, strContentType);
+                requestData.length, strContentType, charset);
     }
 
     /**
@@ -78,11 +81,13 @@ public class MockHttpServletRequest implements HttpServletRequest {
     public MockHttpServletRequest(
             final InputStream requestData,
             final long requestLength,
-            final String strContentType) {
+            final String strContentType,
+            final Charset charset) {
         m_requestData = requestData;
         length = requestLength;
         m_strContentType = strContentType;
         m_headers.put(FileUploadBase.CONTENT_TYPE, strContentType);
+        m_charset = charset;
     }
 
     /**
@@ -282,14 +287,14 @@ public class MockHttpServletRequest implements HttpServletRequest {
      * @see javax.servlet.ServletRequest#getCharacterEncoding()
      */
     public String getCharacterEncoding() {
-        return null;
+        return this.m_charset.name();
     }
 
     /**
      * @see javax.servlet.ServletRequest#setCharacterEncoding(String)
      */
-    public void setCharacterEncoding(String arg0)
-        throws UnsupportedEncodingException {
+    public void setCharacterEncoding(String arg0) {
+        throw new UnsupportedOperationException();
     }
 
     /**

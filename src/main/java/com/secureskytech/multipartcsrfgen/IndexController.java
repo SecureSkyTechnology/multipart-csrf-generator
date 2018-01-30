@@ -40,6 +40,11 @@ public class IndexController {
         return "index";
     }
 
+    @RequestMapping("/dummy")
+    public String dummy(Model m) {
+        return index(m);
+    }
+
     @Data
     public static class UploadRequestForm {
         @NotEmpty

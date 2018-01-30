@@ -141,14 +141,14 @@ public class TestHttpRequestParserDemo {
         final RequestLine reqline = hreq0.getRequestLine();
         assertNotNull(reqline);
         assertEquals("POST", reqline.getMethod());
-        assertEquals("/", reqline.getUri());
+        assertEquals("/dummy", reqline.getUri());
         assertEquals(HttpVersion.HTTP_1_1, reqline.getProtocolVersion());
         final Header[] headers = hreq0.getAllHeaders();
         assertEquals(13, headers.length);
         assertEquals("Host", headers[0].getName());
         assertEquals("localhost:9002", headers[0].getValue());
         assertEquals("Content-Length", headers[1].getName());
-        assertEquals("1350", headers[1].getValue());
+        assertEquals("1683", headers[1].getValue());
         assertEquals("Cache-Control", headers[2].getName());
         assertEquals("max-age=0", headers[2].getValue());
         assertEquals("Origin", headers[3].getName());
@@ -156,7 +156,7 @@ public class TestHttpRequestParserDemo {
         assertEquals("Upgrade-Insecure-Requests", headers[4].getName());
         assertEquals("1", headers[4].getValue());
         assertEquals("Content-Type", headers[5].getName());
-        assertEquals("multipart/form-data; boundary=----WebKitFormBoundaryBrTlCFgj0sV1WeyW", headers[5].getValue());
+        assertEquals("multipart/form-data; boundary=----WebKitFormBoundaryQMdpaBCjQndwSnvO", headers[5].getValue());
         final String contentType = headers[5].getValue();
         assertEquals("User-Agent", headers[6].getName());
         assertEquals(
@@ -173,7 +173,9 @@ public class TestHttpRequestParserDemo {
         assertEquals("Accept-Language", headers[10].getName());
         assertEquals("ja,en-US;q=0.9,en;q=0.8", headers[10].getValue());
         assertEquals("Cookie", headers[11].getName());
-        assertEquals("_ga=GA1.1.394581352.1511848536", headers[11].getValue());
+        assertEquals(
+            "_ga=GA1.1.394581352.1511848536; JSESSIONID=8B51DE5FD4C803610312C9720A23402C",
+            headers[11].getValue());
         assertEquals("Connection", headers[12].getName());
         assertEquals("close", headers[12].getValue());
 
@@ -182,7 +184,7 @@ public class TestHttpRequestParserDemo {
                 (new ClassPathResource("static/sample-multipart-request-1-body.bin")).getInputStream());
         final byte[] remains = AppSpecUtils.fromSessionInputBuffer(inbuffer);
         assertArrayEquals(reqbody0, remains);
-        HttpServletRequest servletRequest = new MockHttpServletRequest(remains, contentType);
+        HttpServletRequest servletRequest = new MockHttpServletRequest(remains, contentType, StandardCharsets.UTF_8);
         ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
         Map<String, List<FileItem>> params = upload.parseParameterMap(servletRequest);
         for (Entry<String, List<FileItem>> e : params.entrySet()) {
@@ -197,26 +199,26 @@ public class TestHttpRequestParserDemo {
                 System.out.println("[" + e.getKey() + "][" + i + "].getSize()=" + fi.getSize());
             }
         }
-        List<FileItem> fis = params.get("msg1");
+        List<FileItem> fis = params.get("<>%22&'日本語キー");
         assertEquals(2, fis.size());
         FileItem fi = fis.get(0);
         assertTrue(fi.isFormField());
-        assertEquals("msg1", fi.getFieldName());
-        assertEquals(19, fi.getSize());
+        assertEquals("<>%22&'日本語キー", fi.getFieldName());
+        assertEquals(24, fi.getSize());
         byte[] fiv = fi.get();
-        assertEquals("日本語文字列1", new String(fiv, StandardCharsets.UTF_8));
+        assertEquals("<>\"&'日本語文字列1", new String(fiv, StandardCharsets.UTF_8));
         fi = fis.get(1);
         assertTrue(fi.isFormField());
-        assertEquals("msg1", fi.getFieldName());
-        assertEquals(19, fi.getSize());
+        assertEquals("<>%22&'日本語キー", fi.getFieldName());
+        assertEquals(24, fi.getSize());
         fiv = fi.get();
-        assertEquals("日本語文字列2", new String(fiv, StandardCharsets.UTF_8));
+        assertEquals("<>\"&'日本語文字列2", new String(fiv, StandardCharsets.UTF_8));
 
-        fis = params.get("file1");
+        fis = params.get("fileA");
         assertEquals(1, fis.size());
         fi = fis.get(0);
         assertFalse(fi.isFormField());
-        assertEquals("file1", fi.getFieldName());
+        assertEquals("fileA", fi.getFieldName());
         assertEquals("256_0to255.bin", fi.getName());
         assertEquals("application/octet-stream", fi.getContentType());
         assertEquals(256, fi.getSize());
@@ -224,16 +226,34 @@ public class TestHttpRequestParserDemo {
             StreamUtils.copyToByteArray((new ClassPathResource("static/256_0to255.bin")).getInputStream());
         assertArrayEquals(bin256, fi.get());
 
-        fis = params.get("file2");
+        fis = params.get("<>%22&'ファイル%0D%0AB%0d%0a");
         assertEquals(1, fis.size());
         fi = fis.get(0);
         assertFalse(fi.isFormField());
-        assertEquals("file2", fi.getFieldName());
+        assertEquals("<>%22&'ファイル%0D%0AB%0d%0a", fi.getFieldName());
         assertEquals("512_0to255.bin", fi.getName());
         assertEquals("application/octet-stream", fi.getContentType());
         assertEquals(512, fi.getSize());
         final byte[] bin512 =
             StreamUtils.copyToByteArray((new ClassPathResource("static/512_0to255.bin")).getInputStream());
         assertArrayEquals(bin512, fi.get());
+
+        fis = params.get("ascii%0D%0Apname2[]%0d%0a");
+        assertEquals(1, fis.size());
+        fi = fis.get(0);
+        assertTrue(fi.isFormField());
+        assertEquals("ascii%0D%0Apname2[]%0d%0a", fi.getFieldName());
+        assertEquals(24, fi.getSize());
+        fiv = fi.get();
+        assertEquals("ascii\r\npvalue2[]\r\n%0d%0a", new String(fiv, StandardCharsets.UTF_8));
+
+        fis = params.get("ascii pname1%0d%0a");
+        assertEquals(1, fis.size());
+        fi = fis.get(0);
+        assertTrue(fi.isFormField());
+        assertEquals("ascii pname1%0d%0a", fi.getFieldName());
+        assertEquals(19, fi.getSize());
+        fiv = fi.get();
+        assertEquals("ascii pvalue1%0d%0a", new String(fiv, StandardCharsets.UTF_8));
     }
 }

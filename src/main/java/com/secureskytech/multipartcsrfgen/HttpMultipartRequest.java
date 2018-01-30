@@ -50,7 +50,7 @@ public class HttpMultipartRequest {
             }
         }
         final byte[] remains = AppSpecUtils.fromSessionInputBuffer(inbuffer);
-        HttpServletRequest servletRequest = new MockHttpServletRequest(remains, contentType);
+        HttpServletRequest servletRequest = new MockHttpServletRequest(remains, contentType, StandardCharsets.UTF_8);
         ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
         Map<String, List<FileItem>> params = upload.parseParameterMap(servletRequest);
         final List<MultipartParameter> multipartParameters = new ArrayList<>();
@@ -58,7 +58,7 @@ public class HttpMultipartRequest {
             List<FileItem> fis = e.getValue();
             for (int i = 0; i < fis.size(); i++) {
                 FileItem fi = fis.get(i);
-                final String name = new String(fi.getFieldName().getBytes(StandardCharsets.ISO_8859_1), charset);
+                final String name = fi.getFieldName();
                 if (fi.isFormField()) {
                     final String pv = new String(fi.get(), charset);
                     multipartParameters.add(new MultipartParameter(name, pv));
