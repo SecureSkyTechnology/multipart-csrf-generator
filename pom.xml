@@ -5,11 +5,17 @@
 
   <groupId>com.secureskytech</groupId>
   <artifactId>multipart-csrf-generator</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>multipart-csrf-generator</name>
   <description>multipart CSRF generator</description>
+  <url>https://github.com/SecureSkyTechnology/multipart-csrf-generator</url>
+
+  <organization>
+    <name>Secure Sky Technology, Inc.</name>
+    <url>https://www.securesky-tech.com/</url>
+  </organization>
 
   <parent>
     <groupId>org.springframework.boot</groupId>
