@@ -5,26 +5,32 @@
 <title>multipart CSRF generator</title>
 </head>
 <body>
+<H1>multipart CSRF generator</H1>
+<ul>
+<li><code>application/x-www-form-urlencoded</code>および<code>multipart/form-data</code>に対応したCSRFフォームを生成します。</li>
+<li>multipartの場合は生成するフォームで<code>FormData</code>オブジェクトを使うため、<a href="https://caniuse.com/#search=FormData" target="_blank">対応ブラウザに注意してください。</a></li>
+</ul>
 
-<h2>HTTP multipart リクエストファイルをアップロードしてください</h2>
 <form data-th-action="@{/upload-multipart-request}" method="post" enctype="multipart/form-data">
-完全なURL : <input type="text" name="url" value="" placeholder="http:// または https:// 始まりのURL" size="100"/><br />
+送信先のURL : <input type="text" name="url" value="" placeholder="http:// または https:// 始まりのURL" size="100"/><br />
 リクエストの主たる文字コード : 
 <select name="csname">
 <option th:each="cs : ${charsets}" th:value="${cs}" th:inline="text">[[${cs}]]</option>
 </select><br />
-HTTP multipart リクエストファイル : <input type="file" name="httpRequest"/><br />
-生成するCSRFフォームでの自動アクセス : 
+HTTPリクエストファイル : <input type="file" name="httpRequest"/><br />
+自動送信/自動submit : 
 <label><input type="radio" name="enableAutoAccess" value="true" data-th-checked="true"/>ON</label>
 <label><input type="radio" name="enableAutoAccess" value="false"/>OFF</label><br />
-Cookie送信(withCredentials) : 
+Cookie送信(withCredentials)(multipartのみ対応) : 
 <label><input type="radio" name="withCredentials" value="true" data-th-checked="true"/>ON</label>
 <label><input type="radio" name="withCredentials" value="false"/>OFF</label><br />
-Basic認証(Authorizationヘッダーのコピー) : 
+Basic認証(Authorizationヘッダーのコピー)(multipartのみ対応) : 
 <label><input type="radio" name="copyAuthorizationHeader" value="true" data-th-checked="true"/>ON</label>
 <label><input type="radio" name="copyAuthorizationHeader" value="false"/>OFF</label><br />
 <input type="submit"/>
 </form>
+
+<hr />
 
 <h2>CSRFフォーム生成ログ</h2>
 <table border="1">
@@ -37,10 +43,35 @@ Basic認証(Authorizationヘッダーのコピー) :
 
 <a data-th-href="@{/clear-history}">ログのクリア</a>
 
+<hr />
+
+<h2>HTTP application/x-www-form-urlencoded リクエストのサンプルフォーム</h2>
+
+application/x-www-form-urlencoded (フォームPOST) リクエストをサンプリングするダミーフォームです。
+ローカルHTTPプロキシを使ってリクエストを保存し、上のフォームにアップロードしてみてください。
+
+<ul>
+<li><a data-th-href="@{/sample-formpost-request-1.bin}" target="_blank">実際に上記ファイルをこのフォームで送信したときのHTTPリクエストのサンプル</a></li>
+</ul>
+
+<form method="post" target="_blank" data-th-action="@{/dummy}">
+<table>
+<tr><th>ascii pname1%0d%0a</th><td><input type="text" name="ascii pname1%0d%0a" value="ascii &#13;&#10;pvalue1%0d%0a"/></td></tr>
+<tr><th>ascii(0x0d)(0x0a)pname2[]%0d%0a</th><td><textarea name="ascii&#13;&#10;pname2[]%0d%0a">ascii
+pvalue2[]
+%0d%0a</textarea></td></tr>
+<tr><th>&lt;&gt;&quot;&amp;&#39;日本語キー</th><td><input type="text" name="&lt;&gt;&quot;&amp;&#39;日本語キー" value="&lt;&gt;&quot;&amp;&#39;日本語文字列1"/></td></tr>
+<tr><th>&lt;&gt;&quot;&amp;&#39;日本語キー</th><td><input type="text" name="&lt;&gt;&quot;&amp;&#39;日本語キー" value="&lt;&gt;&quot;&amp;&#39;日本語文字列2"/></td></tr>
+</table>
+<input type="submit"/>
+</form>
+
+<hr />
+
 <h2>HTTP multipart リクエストのサンプルフォーム</h2>
 
 UTF-8日本語文字列パラメータを含む 0x00 - 0xFF のファイルアップロードのmultipart リクエストをサンプリングするダミーフォームです。
-ローカルHTTPプロキシを使ってmultipartリクエストを保存し、上のフォームにアップロードしてみてください。
+ローカルHTTPプロキシを使ってリクエストを保存し、上のフォームにアップロードしてみてください。
 
 <ul>
 <li><a data-th-href="@{/256_0to255.bin}" target="_blank">0x00 - 0xFF が1回繰り返された256バイトのバイナリデータファイル</a></li>

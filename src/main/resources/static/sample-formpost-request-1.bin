@@ -1,0 +1,16 @@
+POST /dummy HTTP/1.1
+Host: localhost:9002
+Content-Length: 385
+Cache-Control: max-age=0
+Origin: http://localhost:9002
+Upgrade-Insecure-Requests: 1
+Content-Type: application/x-www-form-urlencoded
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8
+Referer: http://localhost:9002/
+Accept-Encoding: gzip, deflate
+Accept-Language: ja,en-US;q=0.9,en;q=0.8
+Cookie: _ga=GA1.1.394581352.1511848536; JSESSIONID=93D8686BE3CEE904756ECE14F1FDED29
+Connection: close
+
+ascii+pname1%250d%250a=ascii+pvalue1%250d%250a&ascii%0D%0Apname2%5B%5D%250d%250a=ascii%0D%0Apvalue2%5B%5D%0D%0A%250d%250a&%3C%3E%22%26%27%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%82%AD%E3%83%BC=%3C%3E%22%26%27%E6%97%A5%E6%9C%AC%E8%AA%9E%E6%96%87%E5%AD%97%E5%88%971&%3C%3E%22%26%27%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%82%AD%E3%83%BC=%3C%3E%22%26%27%E6%97%A5%E6%9C%AC%E8%AA%9E%E6%96%87%E5%AD%97%E5%88%972

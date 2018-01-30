@@ -35,7 +35,7 @@
 </table>
 </th:block>
 
-<h3>デバッグ : HTTPリクエストのmultipart解析結果</h3>
+<h3>デバッグ : HTTPリクエストの解析結果</h3>
 <h4>Request Line</h4>
 <table border="1">
 <tr><th>METHOD</th><td data-th-text="${csrfItem.mpreq.requestLine.method}"></td></tr>
@@ -49,6 +49,15 @@
 <tr data-th-each="header : ${csrfItem.mpreq.headers}">
 <td data-th-text="${header.name}"></td>
 <td data-th-text="${header.value}"></td>
+</tr>
+</table>
+
+<h4>application/x-www-form-urlencodedパラメータ一覧</h4>
+<table border="1">
+<tr><th>Name</th><th>Value</th></tr>
+<tr data-th-each="param : ${csrfItem.mpreq.formParameters}">
+<td data-th-text="${param.name}"></td>
+<td data-th-text="${param.value}"></td>
 </tr>
 </table>
 

@@ -12,11 +12,12 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.StreamUtils;
 
 import com.secureskytech.multipartcsrfgen.HttpMultipartRequest.MultipartParameter;
+import com.secureskytech.multipartcsrfgen.HttpMultipartRequest.UrlEncodedParameter;
 
 public class TestHttpMultipartRequest {
 
     @Test
-    public void testParser() throws Exception {
+    public void testParseMultipart() throws Exception {
         final byte[] reqdata0 =
             StreamUtils
                 .copyToByteArray((new ClassPathResource("static/sample-multipart-request-1.bin")).getInputStream());
@@ -62,6 +63,9 @@ public class TestHttpMultipartRequest {
         assertEquals("Connection", headers[12].getName());
         assertEquals("close", headers[12].getValue());
 
+        assertEquals(0, req0.formParameters.size());
+        assertEquals(6, req0.multipartParameters.size());
+
         MultipartParameter mp = req0.multipartParameters.get(0);
         assertEquals("<>%22&'日本語キー", mp.name);
         assertFalse(mp.isFile);
@@ -95,4 +99,39 @@ public class TestHttpMultipartRequest {
         assertFalse(mp.isFile);
         assertEquals("ascii pvalue1%0d%0a", mp.printableValue);
     }
+
+    @Test
+    public void testParseFormPost() throws Exception {
+        final byte[] reqdata0 =
+            StreamUtils
+                .copyToByteArray((new ClassPathResource("static/sample-formpost-request-1.bin")).getInputStream());
+        HttpMultipartRequest req0 = HttpMultipartRequest.parse(reqdata0, StandardCharsets.UTF_8);
+
+        assertEquals(4, req0.formParameters.size());
+        assertEquals(0, req0.multipartParameters.size());
+
+        UrlEncodedParameter formp = req0.formParameters.get(0);
+        assertEquals("ascii pname1%0d%0a", formp.name);
+        assertEquals("ascii pvalue1%0d%0a", formp.value);
+        formp = req0.formParameters.get(1);
+        assertEquals("ascii\r\npname2[]%0d%0a", formp.name);
+        assertEquals("ascii\r\npvalue2[]\r\n%0d%0a", formp.value);
+        formp = req0.formParameters.get(2);
+        assertEquals("<>\"&'日本語キー", formp.name);
+        assertEquals("<>\"&'日本語文字列1", formp.value);
+        formp = req0.formParameters.get(3);
+        assertEquals("<>\"&'日本語キー", formp.name);
+        assertEquals("<>\"&'日本語文字列2", formp.value);
+    }
+
+    @Test
+    public void testEscapeToJavaScriptString() {
+        assertEquals("", HttpMultipartRequest.escapeToJavaScriptString(null));
+        assertEquals("", HttpMultipartRequest.escapeToJavaScriptString(""));
+        assertEquals("abcこんにちは", HttpMultipartRequest.escapeToJavaScriptString("abcこんにちは"));
+        assertEquals(
+            "\\x08\\x09\\x0a\\x0d\\x0c\\x3c\\x3e\\x22\\x27\\\\\\/abcこんにちは",
+            HttpMultipartRequest.escapeToJavaScriptString("\b\t\n\r\f<>\"'\\/abcこんにちは"));
+    }
+
 }
