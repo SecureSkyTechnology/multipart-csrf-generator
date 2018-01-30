@@ -4,20 +4,34 @@ import java.nio.charset.Charset;
 
 import javax.servlet.http.Part;
 
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StreamUtils;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttributes;
+
+import com.secureskytech.multipartcsrfgen.CsrfHistory.CsrfItem;
+
+import lombok.Data;
 
 @Controller
+@SessionAttributes("csrfHistory")
 public class IndexController {
 
     @Autowired
     ApplicationContext applicationContext;
+
+    @ModelAttribute("csrfHistory")
+    public CsrfHistory createCsrfHistory() {
+        return new CsrfHistory();
+    }
 
     @RequestMapping("/")
     public String index(Model m) {
@@ -26,15 +40,49 @@ public class IndexController {
         return "index";
     }
 
-    @PostMapping("/upload-multipart-request")
-    public String uploadMultipartRequest(@RequestParam String url, @RequestParam String csname,
-            @RequestParam Part httpRequest, Model m) throws Exception {
-        final Charset charset = Charset.forName(csname);
+    @Data
+    public static class UploadRequestForm {
+        @NotEmpty
+        public String url;
+        @NotEmpty
+        public String csname;
+        public boolean enableAutoAccess;
+    }
 
-        m.addAttribute("httpRequest", httpRequest);
+    @PostMapping("/upload-multipart-request")
+    public String uploadMultipartRequest(UploadRequestForm uploadRequestForm, @RequestParam Part httpRequest, Model m,
+            CsrfHistory csrfHistory) throws Exception {
+        final Charset charset = Charset.forName(uploadRequestForm.csname);
+
+        m.addAttribute("httpRequest", httpRequest); // TODO アップロードされない場合は、nullにはならない。size = -1 になるのかな？
+        System.out.println("===============>>>>>>>>>>>> uploaded Part.size(); = [[[[" + httpRequest.getSize() + "]]]"); // TODO
         byte[] httpRequestAsBytes = StreamUtils.copyToByteArray(httpRequest.getInputStream());
         final HttpMultipartRequest mpreq = HttpMultipartRequest.parse(httpRequestAsBytes, charset);
-        m.addAttribute("mpreq", mpreq);
-        return "upload-multipart-request";
+        CsrfItem csrfItem = new CsrfItem(uploadRequestForm.url, charset, mpreq, "<s>\"TODO&'</s>"); //TODO
+        csrfHistory.items.add(0, csrfItem);
+        m.addAttribute("csrfItem", csrfItem);
+        return "csrf-form";
+    }
+
+    @RequestMapping("/csrf-form/{token}")
+    public String csrfForm(@PathVariable String token, Model m, CsrfHistory csrfHistory) {
+        for (CsrfItem i : csrfHistory.items) {
+            if (i.token.equals(token)) {
+                m.addAttribute("csrfItem", i);
+                break;
+            }
+        }
+        return "csrf-form";
+    }
+
+    @RequestMapping("/csrf-form-attack/{token}")
+    public String csrfFormAttack(@PathVariable String token, Model m, CsrfHistory csrfHistory) {
+        for (CsrfItem i : csrfHistory.items) {
+            if (i.token.equals(token)) {
+                m.addAttribute("csrfItem", i);
+                break;
+            }
+        }
+        return "csrf-form";
     }
 }

@@ -2,14 +2,22 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="utf-8" />
-<title>ファイルアップロード結果</title>
+<title>CSRFフォーム生成結果</title>
 </head>
 <body>
 
-<h3>ファイルアップロード結果</h3>
-<p data-th-inline="text">完全なURL： '[[${param.url[0]}]]'</p>
-<p data-th-inline="text">文字コード： '[[${param.csname[0]}]]'</p>
+<a data-th-href="@{/}">戻る</a>
 
+<h2>CSRFフォーム生成結果</h2>
+<table border="1">
+<tr><th>token</th><td><a target="_blank" data-th-text="${csrfItem.token}" data-th-href="@{/csrf-form-attack/{token}(token=${csrfItem.token})}"></a>(別タブで実際にHTMLを表示します)</td></tr>
+<tr><th>完全なURL</th><td data-th-text="${csrfItem.url}"></td></tr>
+<tr><th>文字コード</th><td data-th-text="${csrfItem.charset.name()}"></td></tr>
+<tr><th>生成日時</th><td data-th-text="${#dates.format(csrfItem.timestamp, 'yyyy-MM-dd HH:mm:ss.SSS')}"></td></tr>
+</table>
+<textarea data-th-field="${csrfItem.csrfHtml}" style="width: 80%; height: 150px;" data-th-readonly="true"></textarea>
+
+<th:block th:if="${httpRequest != null}">
 <h3>デバッグ : アップロードされたHTTPリクエストのデータファイル情報</h3>
 <table border="1">
 <tr><th>getContentType()</th><td data-th-text="${httpRequest.contentType}"></td></tr>
@@ -25,19 +33,20 @@
 </td>
 </tr>
 </table>
+</th:block>
 
-<h3>デバッグ : アップロードされたHTTPリクエストのmultipart解析結果</h3>
+<h3>デバッグ : HTTPリクエストのmultipart解析結果</h3>
 <h4>Request Line</h4>
 <table border="1">
-<tr><th>METHOD</th><td data-th-text="${mpreq.requestLine.method}"></td></tr>
-<tr><th>PATH</th><td data-th-text="${mpreq.requestLine.uri}"></td></tr>
-<tr><th>VERSION</th><td data-th-text="${mpreq.requestLine.protocolVersion}"></td></tr>
+<tr><th>METHOD</th><td data-th-text="${csrfItem.mpreq.requestLine.method}"></td></tr>
+<tr><th>PATH</th><td data-th-text="${csrfItem.mpreq.requestLine.uri}"></td></tr>
+<tr><th>VERSION</th><td data-th-text="${csrfItem.mpreq.requestLine.protocolVersion}"></td></tr>
 </table>
 
 <h4>Headers</h4>
 <table border="1">
 <tr><th>Name</th><th>Value</th></tr>
-<tr data-th-each="header : ${mpreq.headers}">
+<tr data-th-each="header : ${csrfItem.mpreq.headers}">
 <td data-th-text="${header.name}"></td>
 <td data-th-text="${header.value}"></td>
 </tr>
@@ -46,7 +55,7 @@
 <h4>multipartパラメータ一覧</h4>
 <table border="1">
 <tr><th>Name</th><th>isFile?</th><th>値 or ファイル名 + Content-Type + length</th></tr>
-<tr data-th-each="param : ${mpreq.multipartParameters}">
+<tr data-th-each="param : ${csrfItem.mpreq.multipartParameters}">
 <td data-th-text="${param.name}"></td>
 <td data-th-text="${param.isFile}"></td>
 <td data-th-text="${param.isFile} ? ${param.fileName} + ' ' + ${param.contentType} + ' ' + ${param.fileBytes.length} : ${param.printableValue}"></td>

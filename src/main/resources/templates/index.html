@@ -5,16 +5,29 @@
 <title>multipart CSRF generator</title>
 </head>
 <body>
+
 <h2>HTTP multipart リクエストファイルをアップロードしてください</h2>
-<form data-th-action="@{/upload-multipart-request}" method="post" enctype="multipart/form-data" target="_blank">
+<form data-th-action="@{/upload-multipart-request}" method="post" enctype="multipart/form-data">
 完全なURL : <input type="text" name="url" value="" placeholder="http:// または https:// 始まりのURL" size="100"/><br />
 リクエストの主たる文字コード : 
 <select name="csname">
 <option th:each="cs : ${charsets}" th:value="${cs}" th:inline="text">[[${cs}]]</option>
 </select><br />
 HTTP multipart リクエストファイル : <input type="file" name="httpRequest"/><br />
+生成するCSRFフォームでの自動アクセス : 
+<label><input type="radio" name="enableAutoAccess" value="true" data-th-checked="true"/>ON</label>
+<label><input type="radio" name="enableAutoAccess" value="false"/>OFF</label><br />
 <input type="submit"/>
 </form>
+
+<h2>CSRFフォーム生成ログ</h2>
+<table border="1">
+<tr><th>生成日時</th><th>token, URL</th></tr>
+<tr data-th-each="csrfItem : ${csrfHistory.items}">
+<td data-th-text="${#dates.format(csrfItem.timestamp, 'yyyy-MM-dd HH:mm:ss.SSS')}"></td>
+<td><a data-th-text="${csrfItem.token}" data-th-href="@{/csrf-form/{token}(token=${csrfItem.token})}"></a><br/><span data-th-inline="text">[[${csrfItem.url}]]</span></td>
+</tr>
+</table>
 
 <h2>HTTP multipart リクエストのサンプルフォーム</h2>
 
@@ -28,8 +41,8 @@ UTF-8日本語文字列パラメータを含む 0x00 - 0xFF のファイルア�
 </ul>
 
 <form method="post" enctype="multipart/form-data" target="_blank">
-日本語文字列1 <input type="text" name="msg1" value="日本語文字列1"/><br /> 
-日本語文字列2 <input type="text" name="msg1" value="日本語文字列2"/><br />
+日本語文字列1 <input type="text" name="msg1" value="&lt;&gt;&quot;&amp;&#039;日本語文字列1"/><br /> 
+日本語文字列2 <input type="text" name="msg1" value="&lt;&gt;&quot;&amp;&#039;日本語文字列2"/><br />
 file1 : <input type="file" name="file1"/><br />
 file2 : <input type="file" name="file2"/><br />
 <input type="submit"/>

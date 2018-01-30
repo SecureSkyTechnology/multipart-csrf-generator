@@ -19,7 +19,9 @@ import org.apache.http.impl.io.DefaultHttpRequestParser;
 import org.apache.http.io.SessionInputBuffer;
 
 import ext.org.apache.commons.fileupload.MockHttpServletRequest;
+import lombok.Data;
 
+@Data
 public class HttpMultipartRequest {
     public final RequestLine requestLine;
     public final Header[] headers;
@@ -104,6 +106,7 @@ public class HttpMultipartRequest {
         sb.append("<body><script>\r\n");
         sb.append("var formData = new FormData();\r\n");
         for (MultipartParameter mp : this.multipartParameters) {
+            // TODO JavaScript String Literal escaping : \' or unicode escape selectable. / OR HTML escaping includes '
             if (mp.isFile) {
                 sb.append("formData.append('" + mp.name + "', '" + mp.printableValue + "');\r\n");
             } else {
