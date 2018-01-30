@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
 
 import com.secureskytech.multipartcsrfgen.CsrfHistory.CsrfItem;
 
@@ -48,6 +49,12 @@ public class IndexController {
     @RequestMapping("/dummy")
     public String dummy(Model m) {
         return index(m);
+    }
+
+    @RequestMapping("/clear-history")
+    public String clearHistory(SessionStatus sessionStatus) {
+        sessionStatus.setComplete();
+        return "redirect:/";
     }
 
     @Data
